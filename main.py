@@ -22,8 +22,15 @@ with sqlite3.connect("ips.db") as db:
         if location == "/ips":
             response = ""
             ips = dbcur.execute("SELECT ip FROM ips").fetchall()
+            ip_dict = {}
             for ip in ips:
-                response += f"{ip[0]}\r\n"
+                if ip not in ip_dict:
+                    ip_dict[ip] = 1
+                else:
+                    ip_dict[ip] += 1
+
+            for ip, count in ip_dict.items():
+                response += f"{ip[0]}: {count}\r\n"
             conn.send("HTTP/3 200 OK\r\n".encode())
             conn.send(f"Content-Lenght: {len(response)}\r\n\r\n".encode())
             conn.send(response.encode())
