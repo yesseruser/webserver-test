@@ -19,7 +19,7 @@ with sqlite3.connect("ips.db") as db:
             conn.send(content)
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
-        dbcur.execute(f"INSERT INTO ips (ip) VALUES (?)", (str(addr),))
+        dbcur.execute(f"INSERT INTO ips (ip) VALUES (?)", (str(addr[0]),))
         db.commit()
 
 
