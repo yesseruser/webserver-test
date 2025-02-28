@@ -11,12 +11,28 @@ with sqlite3.connect("ips.db") as db:
 
     while True:
         conn, addr = ws.accept()
+        request = conn.recv(1024).decode()
         print(f"connection from: {addr}")
-        with open("index.html", "rb") as file:
-            content = file.read()
+        location = "/"
+        lines = request.split("\r\n")
+        if len(lines) != 0:
+            header_args = lines[0].split(" ")
+            if len(header_args) == 3:
+                location = header_args[1]
+        if location == "/ips":
+            response = ""
+            ips = dbcur.execute("SELECT ip FROM ips").fetchall()
+            for ip in ips:
+                response += f"{ip[0]}\r\n"
             conn.send("HTTP/3 200 OK\r\n".encode())
-            conn.send(f"Content-Lenght: {len(content.decode())}\r\n\r\n".encode())
-            conn.send(content)
+            conn.send(f"Content-Lenght: {len(response)}\r\n\r\n".encode())
+            conn.send(response.encode())
+        else:
+            with open("index.html", "rb") as file:
+                content = file.read()
+                conn.send("HTTP/3 200 OK\r\n".encode())
+                conn.send(f"Content-Lenght: {len(content.decode())}\r\n\r\n".encode())
+                conn.send(content)
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
         dbcur.execute(f"INSERT INTO ips (ip) VALUES (?)", (str(addr[0]),))
