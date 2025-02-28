@@ -37,9 +37,10 @@ with sqlite3.connect("ips.db") as db:
         else:
             with open("index.html", "rt") as file:
                 content = file.read()
-                conn.send("HTTP/3 200 OK\r\n".encode())
-                conn.send(f"Content-Lenght: {str(len(content))}\r\n\r\n".encode())
-                conn.send(content.encode())
+                response = "HTTP/3 200 OK\r\n"
+                response += f"Content-Lenght: {str(len(content))}\r\n\r\n"
+                response += content
+                conn.send(response.encode())
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
         dbcur.execute(f"INSERT INTO ips (ip) VALUES (?)", (str(addr[0]),))
