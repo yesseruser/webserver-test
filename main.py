@@ -20,7 +20,7 @@ with sqlite3.connect("ips.db") as db:
             if len(header_args) == 3:
                 location = header_args[1]
         if location == "/ips":
-            response = ""
+            content = ""
             ips = dbcur.execute("SELECT ip FROM ips").fetchall()
             ip_dict = {}
             for ip in ips:
@@ -30,9 +30,10 @@ with sqlite3.connect("ips.db") as db:
                     ip_dict[ip] += 1
 
             for ip, count in ip_dict.items():
-                response += f"{ip[0]}: {count}\r\n"
-            conn.send("HTTP/3 200 OK\r\n".encode())
-            conn.send(f"Content-Lenght: {len(response)}\r\n\r\n".encode())
+                content += f"{ip[0]}: {count}\r\n"
+            response = "HTTP/3 200 OK\r\n"
+            response += f"Content-Lenght: {len(content)}\r\n\r\n"
+            response += content
             conn.send(response.encode())
         else:
             with open("index.html", "rt") as file:
